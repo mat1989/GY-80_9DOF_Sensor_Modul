@@ -8,41 +8,85 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/twi.h>
+#include <math.h>
 #include "magn_HMC5883L.h"
 #include "twi.h"
 #include "uart.h"
 
-char m_Scale = 1;
-int16_t raw[3];
-int16_t scaled[3];
+float m_Scale = 1;
+
+float magnX;
+float magnY;
+float magnZ;
+float heading;
 
 void HMC5883L_init() {
 	TWI_Init();
 }
 
 void HMC5883L_ReadScaledAxis() {
-	uint8_t buffer[8]; // = Read(DataRegisterBegin, 6);
-	TWI_readRegisterN(i2cAdr_HMC5883L, DataRegisterBegin, buffer, 6);
-	raw[0] = (buffer[0] << 8) | buffer[1]; //X Axis
-	raw[1] = (buffer[2] << 8) | buffer[3]; //Z Axis
-	raw[2] = (buffer[4] << 8) | buffer[5]; //Y Axis
+	int8_t buffer[8];
 
-	scaled[0] = raw[0] * m_Scale; //X Axis
-	scaled[1] = raw[1] * m_Scale; //Z Axis
-	scaled[2] = raw[2] * m_Scale; //Y Axis
+	if (TWI_Start() == 0) {
+		//Error
+		uart_writeString("TWI Error Start");
+		uart_writeAbsatz();
+	}
+	if (TWI_Write_Addr(i2cAdr_HMC5883L, TW_WRITE) == 0) {
+		//Error
+		uart_writeString("TWI Error i2cAdr Write");
+		uart_writeAbsatz();
+	}
+	if (TWI_Write_Func(DataRegisterBegin) == 0) {
+		//Error
+		uart_writeString("TWI Error regAdr Write");
+		uart_writeAbsatz();
+	}
+	TWI_Stop();
+
+	if (TWI_Start() == 0) {
+		//Error
+		uart_writeString("TWI Error Start");
+		uart_writeAbsatz();
+	}
+	if (TWI_Write_Addr(i2cAdr_HMC5883L, TW_READ) == 0) {
+		//Error
+		uart_writeString("TWI Error i2cAdr Write");
+		uart_writeAbsatz();
+	}
+	if (TWI_Read_sign(buffer, 6) == 0) {
+		//Error
+		uart_writeString("TWI Error Read Int");
+		uart_writeAbsatz();
+	}
+	TWI_Stop();
+
+	magnX = ((buffer[0] << 8) | buffer[1]) * m_Scale; //X Axis
+	magnZ = ((buffer[2] << 8) | buffer[3]) * m_Scale; //Z Axis
+	magnY = ((buffer[4] << 8) | buffer[5]) * m_Scale; //Y Axis
 }
 
-int16_t HMC5883L_GetX() {
-	return scaled[0];
+float HMC5883L_GetX() {
+	return magnX;
 }
 
-int16_t HMC5883L_GetY() {
-	return scaled[2];
+float HMC5883L_GetY() {
+	return magnY;
 }
 
-int16_t HMC5883L_GetZ() {
-	return scaled[1];
+float HMC5883L_GetZ() {
+	return magnZ;
 }
+
+//float HMC5883L_GetHeading(){
+//  heading = atan2(magnY, magnX);
+//
+//  // Correct for when signs are reversed.
+//  if(heading < 0) heading += 2*PI;
+//  if(heading > 2*PI) heading -= 2*PI;
+//
+//  return heading * RAD_TO_DEG; //radians to degrees
+//}
 
 void HMC5883L_SetScale(float gauss) {
 	uint8_t regValue = 0x00;

@@ -17,7 +17,7 @@ void bmp085_Calibration();
 unsigned int bmp085_ReadUT();
 unsigned long bmp085_ReadUP();
 float bmp085_GetTemperature(unsigned int ut);
-void bmp085_GetPressure(unsigned long up, long pressure);
+float bmp085_GetPressure(unsigned long up);
 float bmp085_calcAltitude(float pressure);
 float bmp085_calcAtmosphere(float pressure);
 

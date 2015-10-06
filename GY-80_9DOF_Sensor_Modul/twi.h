@@ -26,6 +26,7 @@ void TWI_Stop(void);
 char TWI_Write_Addr(uint8_t i2cAdr, uint8_t i2cModus);
 char TWI_Write_Func(uint8_t u8data);
 char TWI_Read(uint8_t reply[], uint8_t n_Byte);
+char TWI_Read_sign(int8_t reply[], int8_t n_Byte);
 
 /*
  * High Level

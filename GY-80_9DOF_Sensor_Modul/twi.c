@@ -131,6 +131,29 @@ char TWI_Read(uint8_t reply[], uint8_t n_Byte) {
 	}
 }
 
+char TWI_Read_sign(int8_t reply[], int8_t n_Byte) {
+	//TWI Read Data
+	for (unsigned char i = 0; i < n_Byte; i++) {
+		reply[i] = readACK();
+//		uart_writeInt8(reply[i]);
+//		uart_writeString("-");
+		//_delay_ms(5);
+		if (getStatus() != TW_MR_DATA_ACK) {
+			//Error
+			return 0;
+		}
+	}
+	reply[n_Byte] = readNACK();
+//	uart_writeInt8(reply[n_Byte]);
+//	uart_writeAbsatz();
+	if (getStatus() != TW_MR_DATA_NACK) {
+		//Error
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
 /*
  * High Level
  * *************************************************************

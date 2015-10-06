@@ -18,6 +18,9 @@
 #define Measurement_SingleShot 0x01
 #define Measurement_Idle 0x03
 
+#define PI 3.14159265359
+#define RAD_TO_DEG PI/180
+
 /*
  * Serial.println("Setting scale to +/- 1.3 Ga");
  * error = compass.SetScale(1.3); // Set the scale of the compass.
@@ -29,9 +32,10 @@
 void HMC5883L_init();
 void HMC5883L_ReadScaledAxis();
 
-int16_t HMC5883L_GetX();
-int16_t HMC5883L_GetY();
-int16_t HMC5883L_GetZ();
+float HMC5883L_GetX();
+float HMC5883L_GetY();
+float HMC5883L_GetZ();
+//float HMC5883L_GetHeading();
 
 void HMC5883L_SetScale(float gauss);
 void HMC5883L_SetMeasurementMode(uint8_t mode);

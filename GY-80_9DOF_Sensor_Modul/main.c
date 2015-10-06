@@ -31,6 +31,8 @@ void init(){
 	L3G4200D_Init();
 	ADXL345_init();
 	HMC5883L_init();
+	HMC5883L_SetScale(1.3);
+	HMC5883L_SetMeasurementMode(Measurement_SingleShot);
 	bmp085_Calibration();
 }
 

@@ -47,58 +47,14 @@ void bmp085_Calibration() {
 	mb = TWI_readRegister2(i2cAdr_BMP085, 0xBA);
 	mc = TWI_readRegister2(i2cAdr_BMP085, 0xBC);
 	md = TWI_readRegister2(i2cAdr_BMP085, 0xBE);
-
-//	uart_writeString("AC1: ");
-//	uart_writeInt16(ac1);
-//	uart_writeAbsatz();
-//	uart_writeString("AC2: ");
-//	uart_writeInt16(ac2);
-//	uart_writeAbsatz();
-//	uart_writeString("AC3: ");
-//	uart_writeInt16(ac3);
-//	uart_writeAbsatz();
-//	uart_writeString("AC4: ");
-//	uart_writeInt16(ac4);
-//	uart_writeAbsatz();
-//	uart_writeString("AC5: ");
-//	uart_writeInt16(ac5);
-//	uart_writeAbsatz();
-//	uart_writeString("AC6: ");
-//	uart_writeInt16(ac6);
-//	uart_writeAbsatz();
-//	uart_writeString("B1: ");
-//	uart_writeInt16(b1);
-//	uart_writeAbsatz();
-//	uart_writeString("B2: ");
-//	uart_writeInt16(b2);
-//	uart_writeAbsatz();
-//	uart_writeString("MB: ");
-//	uart_writeInt16(mb);
-//	uart_writeAbsatz();
-//	uart_writeString("MC: ");
-//	uart_writeInt16(mc);
-//	uart_writeAbsatz();
-//	uart_writeString("MD: ");
-//	uart_writeInt16(md);
-//	uart_writeAbsatz();
 }
 
 // Read the uncompensated temperature value
 unsigned int bmp085_ReadUT() {
 	unsigned int ut;
-
-	// Write 0x2E into Register 0xF4
-	// This requests a temperature reading
-//  Wire.beginTransmission(BMP085_ADDRESS);
-//  Wire.write(0xF4);
-//  Wire.write(0x2E);
-//  Wire.endTransmission();
 	TWI_writeRegister(i2cAdr_BMP085, 0xF4, 0x2E);
 	_delay_ms(50);
-
-	// Read two bytes from registers 0xF6 and 0xF7
 	ut = TWI_readRegister2(i2cAdr_BMP085, 0xF6);
-//  ut = bmp085ReadInt(0xF6);
 	return ut;
 }
 
@@ -106,17 +62,8 @@ unsigned int bmp085_ReadUT() {
 unsigned long bmp085_ReadUP() {
 	unsigned char msb, lsb, xlsb;
 	unsigned long up = 0;
-
-// 	Write 0x34+(OSS<<6) into register 0xF4
-// 	Request a pressure reading w/ oversampling setting
-//  Wire.beginTransmission(BMP085_ADDRESS);
-//  Wire.write(0xF4);
-//  Wire.write(0x34 + (OSS<<6));
-//  Wire.endTransmission();
 	TWI_writeRegister(i2cAdr_BMP085, 0xF4, (0x34 + (OSS << 6)));
 	_delay_ms(50);
-
-	// Read register 0xF6 (MSB), 0xF7 (LSB), and 0xF8 (XLSB)
 	msb = TWI_readRegister(i2cAdr_BMP085, 0xF6);
 	lsb = TWI_readRegister(i2cAdr_BMP085, 0xF7);
 	xlsb = TWI_readRegister(i2cAdr_BMP085, 0xF8);
@@ -145,7 +92,7 @@ float bmp085_GetTemperature(unsigned int ut) {
 // calibration values must be known
 // b5 is also required so bmp085GetTemperature(...) must be called first.
 // Value returned will be pressure in units of Pa.
-void bmp085_GetPressure(unsigned long up, long pressure) {
+float bmp085_GetPressure(unsigned long up) {
 	long x1, x2, x3, b3, b6, p;
 	unsigned long b4, b7;
 
@@ -164,33 +111,30 @@ void bmp085_GetPressure(unsigned long up, long pressure) {
 
 	b7 = ((unsigned long) (up - b3) * (50000 >> OSS));
 	if (b7 < 0x80000000) {
-		p = (b7 << 1) / b4;
+		p = (b7 *2) / b4;
 	} else {
-		p = (b7 / b4) << 1;
+		p = (b7 / b4) *2;
 	}
 
 	x1 = (p >> 8) * (p >> 8);
 	x1 = (x1 * 3038) >> 16;
 	x2 = (-7357 * p) >> 16;
-	p += (x1 + x2 + 3791) >> 4;
+	p += ((x1 + x2 + 3791) >> 4);
 
-	pressure = p;
-//	return p;
-//	return 1;
+	return (p/10);
 }
 
 float bmp085_calcAltitude(float pressure) {
 //	float A = pressure / 101325;
-//	float B = 1 / 5.25588;
+//	float B = 0.1902630958; //1 / 5.25588;
 //	float C = pow(A, B);
 //	C = 1 - C;
 //	C = C / 0.0000225577;
-
+//
 //	return C;
 	return 1;
 }
 
 float bmp085_calcAtmosphere(float pressure) {
 	return pressure / 101325;
-//	return 1;
 }
